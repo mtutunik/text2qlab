@@ -36,6 +36,7 @@ tell application id "com.figure53.QLab.5" to tell front workspace
 			set groupCue to last item of (selected as list)
 			set mode of groupCue to timeline
 			set q name of groupCue to "Crossfade to " & q list name of eachcue
+                        set notes of groupCue to notes of eachcue
 			
 			-- Move cues into right place
 			
