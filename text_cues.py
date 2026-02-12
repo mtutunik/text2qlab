@@ -105,34 +105,69 @@ def generate_chunks_from_file(
     max_chars_per_line=80
 ):
     """
-    Reads text from a file and yields chunks according to:
-    - max_sentences_per_chunk: maximum sentences per chunk
-    - max_lines_per_chunk: maximum lines per chunk
-    - max_chars_per_line: maximum characters per line
+    Stream text from file and yield chunks progressively:
+    - max_sentences_per_chunk per chunk
+    - max_lines_per_chunk per chunk
+    - max_chars_per_line per line
     """
-    # Read the entire file
+
+    sentence_buffer = []
+    text_buffer = ""
+
+    sentence_end_re = re.compile(r'(?<!\.)[.!?](?!\.)\s+') 
+
     with open(file_path, "r", encoding="utf-8") as f:
-        text = f.read().strip()
+        for line in f:
+            text_buffer += line.strip() + " "
 
-    # Split text into sentences using a simple regex
-    sentences = re.split(r'(?<=[.!?])\s+', text)
+            # Extract sentences progressively
+            while True:
+                match = sentence_end_re.search(text_buffer)
+                if not match:
+                    break
 
-    i = 0
-    while i < len(sentences):
-        # Take up to max_sentences_per_chunk sentences
-        chunk_sentences = sentences[i:i + max_sentences_per_chunk]
-        i += max_sentences_per_chunk
+                end_index = match.end()
+                sentence = text_buffer[:end_index].strip()
+                text_buffer = text_buffer[end_index:].strip()
 
-        # Join sentences into one string
-        chunk_text = " ".join(chunk_sentences).strip()
+                sentence_buffer.append(sentence)
 
-        # Wrap text to lines <= max_chars_per_line
-        lines = textwrap.wrap(chunk_text, width=max_chars_per_line)
+                # If we reached max sentences → build chunk
+                if len(sentence_buffer) >= max_sentences_per_chunk:
+                    yield from _emit_chunks_from_sentences(
+                        sentence_buffer,
+                        max_lines_per_chunk,
+                        max_chars_per_line
+                    )
+                    sentence_buffer = []
 
-        # If more than max_lines_per_chunk, split into sub-chunks
-        for j in range(0, len(lines), max_lines_per_chunk):
-            sub_lines = lines[j:j + max_lines_per_chunk]
-            yield "\n".join(sub_lines)
+    # Handle remaining buffer at EOF
+    if text_buffer.strip():
+        sentence_buffer.append(text_buffer.strip())
+
+    if sentence_buffer:
+        yield from _emit_chunks_from_sentences(
+            sentence_buffer,
+            max_lines_per_chunk,
+            max_chars_per_line
+        )
+
+
+def _emit_chunks_from_sentences(
+    sentences,
+    max_lines_per_chunk,
+    max_chars_per_line
+):
+    """
+    Helper that formats sentences into wrapped chunks and yields them.
+    """
+
+    chunk_text = " ".join(sentences).strip()
+    lines = textwrap.wrap(chunk_text, width=max_chars_per_line)
+
+    for i in range(0, len(lines), max_lines_per_chunk):
+        sub_lines = lines[i:i + max_lines_per_chunk]
+        yield "\n".join(sub_lines)
 
 
 # -----------------------------
