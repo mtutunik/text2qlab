@@ -13,6 +13,10 @@ MAX_CHARS_PER_CUE = 80  # approximate max characters per cue
 LAYER = 0               # layer for all cues
 OPACITY = 1.0           # cue opacity
 
+MAX_SENTENCES_PER_CHUNK=2
+MAX_LINES_PER_CHUNK=4
+MAX_CHARS_PER_LINE=55
+
 # -----------------------------
 # FUNCTION: Split text into chunks
 # -----------------------------
@@ -104,9 +108,9 @@ def read_chunks(file_path):
 
 def generate_chunks_from_file(
     file_path,
-    max_sentences_per_chunk=2,
-    max_lines_per_chunk=4,
-    max_chars_per_line=80
+    max_sentences_per_chunk=MAX_SENTENCES_PER_CHUNK,
+    max_lines_per_chunk=MAX_LINES_PER_CHUNK,
+    max_chars_per_line=MAX_CHARS_PER_LINE
 ):
     """
     Streaming generator that:
@@ -232,9 +236,9 @@ def main():
     for i, (chunk, speaker) in enumerate(
                               generate_chunks_from_file(
                                 text_file,
-                                max_sentences_per_chunk=2,
-                                max_lines_per_chunk=4,
-                                max_chars_per_line=80), 1):
+                                max_sentences_per_chunk=MAX_SENTENCES_PER_CHUNK,
+                                max_lines_per_chunk=MAX_LINES_PER_CHUNK,
+                                max_chars_per_line=MAX_CHARS_PER_LINE), 1):
         print(f"Creating cue {i}: ({speaker}) {chunk}")
         create_text_cue(chunk, speaker=speaker)
 
