@@ -15,7 +15,7 @@ OPACITY = 1.0           # cue opacity
 
 MAX_SENTENCES_PER_CHUNK=2
 MAX_LINES_PER_CHUNK=4
-MAX_CHARS_PER_LINE=55
+MAX_CHARS_PER_LINE=37
 
 # -----------------------------
 # FUNCTION: Split text into chunks
