@@ -17,6 +17,11 @@ MAX_SENTENCES_PER_CHUNK=2
 MAX_LINES_PER_CHUNK=4
 MAX_CHARS_PER_LINE=37
 
+# Font settings for text cues (set FONT_FAMILY to None to keep QLab's default)
+FONT_FAMILY = "Tahoma"   # font family name as shown in Font Book
+FONT_STYLE = "Bold"           # e.g. "Regular", "Bold", "Italic"
+FONT_SIZE = 72                   # points
+
 # -----------------------------
 # FUNCTION: Split text into chunks
 # -----------------------------
@@ -52,7 +57,15 @@ def create_text_cue(chunk, layer=LAYER, opacity=OPACITY, speaker=None):
 
     # Build AppleScript
 
-    speaker_note = f'"{speaker}"' if speaker else ""
+    speaker_note = f'"{speaker}"' if speaker else '""'
+
+    if FONT_FAMILY:
+        font_line = (
+            f'set text format of newCue to {{fontFamily:"{FONT_FAMILY}", '
+            f'fontStyle:"{FONT_STYLE}", fontSize:{FONT_SIZE}}}'
+        )
+    else:
+        font_line = ""
 
     applescript = f'''
 set chunkText to read POSIX file "{text_path}"
@@ -65,6 +78,7 @@ tell application id "com.figure53.QLab.5" to tell front workspace
     set newCue to last item of (selected as list)
     set thecuenumber to q number of newCue
     set the text of newCue to chunkText
+    {font_line}
     set notes of newCue to speaker_note
 end tell
 '''
